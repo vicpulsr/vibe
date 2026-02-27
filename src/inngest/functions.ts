@@ -80,7 +80,7 @@ export const codeAgent = inngest.createFunction(
               "createOrUpdateFiles",
               async () => {
                 try {
-                  const updatedFiles = network.state.data.files || [];
+                  const updatedFiles = network.state.data.files || {};
                   const sandbox = await getSandbox(sandboxId);
                   for (const file of files) {
                     await sandbox.files.write(file.path, file.content);
@@ -90,12 +90,12 @@ export const codeAgent = inngest.createFunction(
                 } catch (error) {
                   return "Error" + error;
                 }
-
-                if (typeof newFiles === "object") {
-                  network.state.data.files = newFiles;
-                }
               },
             );
+
+            if (typeof newFiles === "object") {
+              network.state.data.files = newFiles;
+            }
           },
         }),
         createTool({
@@ -162,16 +162,16 @@ export const codeAgent = inngest.createFunction(
     });
 
     await step.run("save-result", async () => {
-      if(isError) {
+      if (isError) {
         return await prisma.message.create({
           data: {
             content: "Something went wrong. Please try again later.",
             role: "ASSISTANT",
             type: "ERROR",
           },
-        }); 
+        });
       }
-      
+
       return await prisma.message.create({
         data: {
           content: result.state.data.summary,
