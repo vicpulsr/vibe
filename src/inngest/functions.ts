@@ -5,6 +5,7 @@ import {
   createAgent,
   createTool,
   createNetwork,
+  Tool,
 } from "@inngest/agent-kit";
 import { Sandbox } from "@e2b/code-interpreter";
 import { PROMPT } from "@/prompt";
@@ -12,6 +13,13 @@ import prisma from "@/lib/prisma";
 
 import { inngest } from "./client";
 import { getSandbox, lastAssistantTextMessageContent } from "./utils";
+
+interface AgentState {
+  summary: string;
+  files: {
+    [path: string]: string;
+  };
+}
 
 export const codeAgentFunction = inngest.createFunction(
   { id: "code-agent" },
@@ -23,7 +31,7 @@ export const codeAgentFunction = inngest.createFunction(
     });
 
     // Create a new agent with a system prompt (you can add optional tools, too)
-    const codeAgent = createAgent({
+    const codeAgent = createAgent<AgentState>({
       name: "code-agent",
       description: "An expert coding agent",
       system: PROMPT,
@@ -75,7 +83,10 @@ export const codeAgentFunction = inngest.createFunction(
               }),
             ),
           }),
-          handler: async ({ files }, { step, network }) => {
+          handler: async (
+            { files },
+            { step, network }: Tool.Options<AgentState>,
+          ) => {
             const newFiles = await step?.run(
               "createOrUpdateFiles",
               async () => {
@@ -136,7 +147,7 @@ export const codeAgentFunction = inngest.createFunction(
       },
     });
 
-    const network = createNetwork({
+    const network = createNetwork<AgentState>({
       name: "coding-agent-network",
       agents: [codeAgent],
       maxIter: 15,
