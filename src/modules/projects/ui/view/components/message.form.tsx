@@ -1,4 +1,4 @@
-import { use, useState } from "react";
+import { useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
@@ -33,30 +33,29 @@ export const MessageForm = ({ projectId }: Props) => {
 
   const trpc = useTRPC();
   const queryClient = useQueryClient();
-  const createMessage = useMutation(trpc.messages.create.mutationOptions());
+  const createMessage = useMutation(
+    trpc.messages.create.mutationOptions({
+      onSuccess: () => {
+        form.reset();
+        queryClient.invalidateQueries(
+          trpc.messages.getMany.queryOptions({
+            projectId,
+          }),
+        );
+        //TODO: Invalidate usage status
+      },
+      onError: (error) => {
+        //TODO: Redirect to pricing page if specific error code
+        toast.error(error.message);
+      },
+    }),
+  );
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    await createMessage.mutateAsync(
-      {
-        projectId,
-        value: values.value,
-      },
-      {
-        onSuccess: () => {
-          form.reset();
-          queryClient.invalidateQueries(
-            trpc.messages.getMany.queryOptions({
-              projectId,
-            }),
-          );
-          //TODO: Invalidate usage status
-        },
-        onError: (error) => {
-          //TODO: Redirect to pricing page if specific error code
-          toast.error(error.message);
-        },
-      },
-    );
+    await createMessage.mutateAsync({
+      projectId,
+      value: values.value,
+    });
   };
 
   const [isFocused, setIsFocused] = useState(false);

@@ -21,28 +21,35 @@ export const MessagesContainer = ({
 }: Props) => {
   const trpc = useTRPC();
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const lastAssistantMessageIdRef = useRef<string | null>(null);
 
   const { data: messages } = useSuspenseQuery(
-    trpc.messages.getMany.queryOptions({
-      projectId,
-    }, {
-      // Refetch messages every 5 seconds 
-      // Show the MessageLoading component while the last message is from the user and we are waiting for a response from the assistant 
-      // But when refetching and appears a new message from the assistant, it will show the new message immediately
-      refetchInterval: 5000, 
-    }),
+    trpc.messages.getMany.queryOptions(
+      {
+        projectId,
+      },
+      {
+        // Refetch messages every 5 seconds
+        // Show the MessageLoading component while the last message is from the user and we are waiting for a response from the assistant
+        // But when refetching and appears a new message from the assistant, it will show the new message immediately
+        refetchInterval: 5000,
+      },
+    ),
   );
 
-  // TODO: This is causing problems
-  // useEffect(() => {
-  //   const lastAssistantMessageWithFragment = messages.findLast(
-  //     (message) => message.role === "ASSISTANT" && !!message.fragment,
-  //   );
+  useEffect(() => {
+    const lastAssistantMessage = messages.findLast(
+      (message) => message.role === "ASSISTANT",
+    );
 
-  //   if (lastAssistantMessageWithFragment) {
-  //     setActiveFragment(lastAssistantMessageWithFragment.fragment);
-  //   }
-  // }, [messages, setActiveFragment]);
+    if (
+      lastAssistantMessage?.fragment &&
+      lastAssistantMessage.id !== lastAssistantMessageIdRef.current
+    ) {
+      setActiveFragment(lastAssistantMessage.fragment);
+      lastAssistantMessageIdRef.current = lastAssistantMessage.id;
+    }
+  }, [messages, setActiveFragment]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView();
