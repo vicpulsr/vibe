@@ -29,6 +29,9 @@ export const codeAgentFunction = inngest.createFunction(
   async ({ event, step }) => {
     const sandboxId = await step.run("get-sandbox-id", async () => {
       const sandbox = await Sandbox.create("vibe-nextjs-test-2");
+      // More time here increase the time the sandbox will be alive. 
+      // PAY ATTENTION: More time more credits to spend. 
+      // await sandbox.setTimeout(SANDBOX_TIMEOUT); // 30 minutes
       return sandbox.sandboxId;
     });
 
