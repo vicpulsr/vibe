@@ -7,8 +7,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import TextareaAutosize from "react-textarea-autosize";
 import { ArrowUpIcon, Loader2Icon } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-
+import { useClerk } from "@clerk/nextjs";
 import { useTRPC } from "@/trpc/client";
+
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Form, FormField } from "@/components/ui/form";
@@ -31,6 +32,7 @@ export const ProjectForm = () => {
   });
 
   const trpc = useTRPC();
+  const clerk = useClerk();
   const queryClient = useQueryClient();
   const createProject = useMutation(
     trpc.projects.create.mutationOptions({
@@ -41,6 +43,10 @@ export const ProjectForm = () => {
         //TODO: Invalidate usage status
       },
       onError: (error) => {
+        if(error?.data?.code === "UNAUTHORIZED") {
+          clerk.openSignIn();
+          return;
+        }
         //TODO: Redirect to pricing page if specific error code
         toast.error(error.message);
       },
