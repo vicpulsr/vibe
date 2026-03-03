@@ -18,6 +18,7 @@ import { FileExplorer } from "@/components/file-explorer";
 import { MessagesContainer } from "./components/message-container";
 import { ProjectHeader } from "./components/project-header";
 import { FragmentWeb } from "./components/fragment-web";
+import { UserControl } from "@/components/user-control";
 
 interface Props {
   projectId: string;
@@ -79,6 +80,7 @@ const ProjectView = ({ projectId }: Props) => {
                     Upgrade
                   </Link>
                 </Button>
+                <UserControl />
               </div>
             </div>
             <TabsContent value="preview">
