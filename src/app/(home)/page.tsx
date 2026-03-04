@@ -5,7 +5,7 @@ import Image from "next/image";
 import { ProjectForm } from "@/modules/home/ui/components/project-form";
 import ProjectsList from "@/modules/home/projects-list";
 
-export const Page = () => {
+const Page = () => {
   return (
     <div className="flex flex-col max-w-5xl mx-auto h-full">
       <section className="space-y-6 py-[16vh] 2xl:py-48">
