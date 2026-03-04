@@ -29,6 +29,9 @@ export const codeAgentFunction = inngest.createFunction(
   async ({ event, step }) => {
     const sandboxId = await step.run("get-sandbox-id", async () => {
       const sandbox = await Sandbox.create("vibe-nextjs-test-2");
+      // More time here increase the time the sandbox will be alive. 
+      // PAY ATTENTION: More time more credits to spend. 
+      // await sandbox.setTimeout(SANDBOX_TIMEOUT); // 30 minutes
       return sandbox.sandboxId;
     });
 
@@ -44,6 +47,9 @@ export const codeAgentFunction = inngest.createFunction(
           orderBy: {
             createdAt: "desc",
           },
+          // Get the last 5 messages, because if there are more, the prompt gets confused and the agent doesn't work well. 
+          // You can increase this number if you want, but keep in mind that the more messages you get, the more tokens you will use and the more expensive it will be.
+          take: 5, 
         });
 
         for (const message of messages) {
@@ -54,7 +60,7 @@ export const codeAgentFunction = inngest.createFunction(
           });
         }
 
-        return formattedMEssages;
+        return formattedMEssages.reverse(); // Reverse to have the correct order
       },
     );
 

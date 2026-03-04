@@ -3,6 +3,7 @@
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { CodeIcon, CrownIcon, EyeIcon } from "lucide-react";
+import { ErrorBoundary } from "react-error-boundary";
 
 import { Fragment } from "@/generated/prisma";
 
@@ -20,6 +21,7 @@ import { ProjectHeader } from "./components/project-header";
 import { FragmentWeb } from "./components/fragment-web";
 import { UserControl } from "@/components/user-control";
 import { useAuth } from "@clerk/nextjs";
+import ErrorPage from "@/app/error";
 
 interface Props {
   projectId: string;
@@ -40,16 +42,24 @@ const ProjectView = ({ projectId }: Props) => {
           minSize={20}
           className="flex flex-col min-h-0"
         >
-          <Suspense fallback={<div>Loading project...</div>}>
-            <ProjectHeader projectId={projectId} />
-          </Suspense>
-          <Suspense fallback={<div>Loading messages...</div>}>
-            <MessagesContainer
-              projectId={projectId}
-              activeFragment={activeFragment}
-              setActiveFragment={setActiveFragment}
-            />
-          </Suspense>
+          <ErrorBoundary
+            fallback={
+              <ErrorPage text="Something went wrong with the project header" />
+            }
+          >
+            <Suspense fallback={<div>Loading project...</div>}>
+              <ProjectHeader projectId={projectId} />
+            </Suspense>
+          </ErrorBoundary>
+          <ErrorBoundary fallback={<ErrorPage text="with the messages container" />}>
+            <Suspense fallback={<div>Loading messages...</div>}>
+              <MessagesContainer
+                projectId={projectId}
+                activeFragment={activeFragment}
+                setActiveFragment={setActiveFragment}
+              />
+            </Suspense>
+          </ErrorBoundary>
         </ResizablePanel>
 
         <ResizableHandle withHandle />
